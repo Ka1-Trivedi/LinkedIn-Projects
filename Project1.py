@@ -41,3 +41,6 @@ if option=='0':
     create_list(name)
 elif option=='1':
     open_list(name)
+else :
+    print("Invalid option selected.")
+    exit()
