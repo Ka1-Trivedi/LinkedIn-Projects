@@ -4,12 +4,13 @@ from pyfiglet import Figlet
 import random
 import sys
 
+#FontWork for given string 
 def ascii_art(str):
     figlet = Figlet()
     figlet.setFont(font="big")
     print(figlet.renderText(str))
 
-#Input
+#Taking Input From User
 def get_input():
     # A=input("Name of Player A: ")
     # B=input("Name of Player B: ")
@@ -30,12 +31,14 @@ def get_input():
     print("*"*50)
     return A,B,n
 
+#Pridicting Winner based on starting turn and number of stick if both player play Optimaly
 def get_winner(A,B,n):
     if n%4==0:
         return B
     else:
         return A
 
+#Begins the game between two minds
 def play_game(A,B,n):
     print("The perosn whoes name will apper have to select 1,2 or 3 sticks (🦯)")
     print("Total Sticks:","🦯"*n)
@@ -66,7 +69,7 @@ def play_game(A,B,n):
         except ValueError:
             pass
             
-
+#Handling the Functional calling and Printing Winner
 def main():
     A,B,n=get_input()
     Optimum_winner=get_winner(A,B,n)
