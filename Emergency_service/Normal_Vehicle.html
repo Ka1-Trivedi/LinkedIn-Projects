@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Traffic Signal Notification</title>
+  <script type="text/javascript">
+    var socket;
+
+    // Function to start WebSocket connection and allow voice notifications
+    function startNotifications() {
+      requestNotificationPermission();
+
+      // Connect to the WebSocket server on ESP32
+      socket = new WebSocket('ws://192.168.4.1:81/');  // Assuming 192.168.4.1 is the ESP32 IP
+      
+      socket.onopen = function() {
+        console.log("Connected to the WebSocket server");
+      };
+
+      socket.onmessage = function(event) {
+        console.log("Message from server: " + event.data);
+        document.getElementById("message").innerText = event.data;
+        speakMessage(event.data);  // Trigger voice alert
+        showNotification(event.data);  // Show a browser notification
+      };
+
+      socket.onclose = function() {
+        console.log("Disconnected from WebSocket server");
+      };
+
+      socket.onerror = function(error) {
+        console.log("WebSocket Error: " + error);
+      };
+
+      // Change the button state to indicate that notifications are active
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("notificationStatus").innerText = "Notifications are active";
+
+      // Handle visibility change (when the tab goes to background)
+      document.addEventListener("visibilitychange", function() {
+        if (document.visibilityState === "hidden") {
+          console.log("App is in background");
+        } else {
+          console.log("App is in foreground");
+        }
+      });
+    }
+
+    // Request notification permission
+    function requestNotificationPermission() {
+      if ("Notification" in window) {
+        if (Notification.permission === "default") {
+          Notification.requestPermission().then(function(permission) {
+            console.log("Notification permission: " + permission);
+          });
+        }
+      }
+    }
+
+    // Function to convert text to speech
+    function speakMessage(message) {
+      if ('speechSynthesis' in window) {
+        // Cancel any ongoing speech to avoid overlapping
+        speechSynthesis.cancel();
+        
+        var utterance = new SpeechSynthesisUtterance(message);
+        speechSynthesis.speak(utterance);
+      } else {
+        console.log("SpeechSynthesis API is not supported by this browser.");
+      }
+    }
+
+    // Function to show a browser notification
+    function showNotification(message) {
+      if (Notification.permission === "granted") {
+        new Notification("Traffic Signal Alert", {
+          body: message,
+          icon: "https://example.com/notification-icon.png" // Optional icon
+        });
+      }
+    }
+
+    // Register Service Worker for background sync (optional)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+        console.log('Service Worker registered with scope:', registration.scope);
+      }).catch(function(error) {
+        console.log('Service Worker registration failed:', error);
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>Normal Vehicle Notification System</h1>
+  <p id="notificationStatus">Waiting for user to start notifications...</p>
+  <button id="startBtn" onclick="startNotifications()">Start Notifications</button>
+  <div id="message" style="color: red; font-size: 20px;"></div>
+</body>
+</html>
